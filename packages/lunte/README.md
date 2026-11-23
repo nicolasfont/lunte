@@ -64,6 +64,16 @@ lunte --max-warnings 10 src/
 - Files ending `.ts`, `.tsx`, `.mts`, `.cts`, `.d.ts` (and `.jsx` when present) automatically switch to the TS parser.
 - Type-aware handling currently exists for `no-undef` and `no-unused-vars`; other rules run without type checking.
 
+## Dependencies
+
+`import/no-undeclared-dependencies` reports `import`, `export … from`, `import()`, `require()` and `require.resolve()` specifiers whose package is not declared in the `dependencies`, `devDependencies`, `optionalDependencies` or `peerDependencies` of the nearest `package.json` or any `package.json` above it, matching how `node_modules` lookups walk up the tree.
+
+- Relative and absolute paths, URLs (including `node:` and `bare:`), Node builtins and the package's own name are always allowed.
+- Specifiers matching a key in the nearest `package.json` `imports` (such as `#internal` or a Bare-style `"fs": { "bare": "bare-fs", "default": "fs" }`) are resolved through that map, and every package they can resolve to must be declared. Unmapped `#` specifiers are reported.
+- Type-only imports and specifiers built at runtime are ignored. Files with no `package.json` above them are skipped.
+
+Modules supplied by the host (such as `vscode`) can be suppressed with an [inline ignore](#inline-ignores).
+
 ## Plugins
 
 Load third-party rule packs by listing module IDs under `plugins`. Each plugin should export a `rules` array (or object) of rule definitions with unique `meta.name` values.
