@@ -72,7 +72,15 @@ lunte --max-warnings 10 src/
 - Specifiers matching a key in the nearest `package.json` `imports` (such as `#internal` or a Bare-style `"fs": { "bare": "bare-fs", "default": "fs" }`) are resolved through that map, and every package they can resolve to must be declared. Unmapped `#` specifiers are reported.
 - Type-only imports and specifiers built at runtime are ignored. Files with no `package.json` above them are skipped.
 
-Modules supplied by the host (such as `vscode`) can be suppressed with an [inline ignore](#inline-ignores).
+Modules supplied by the host (such as `vscode` or `electron`) can be allowed by package name, which also covers their subpaths, or suppressed per line with an [inline ignore](#inline-ignores):
+
+```json
+{
+  "rules": {
+    "import/no-undeclared-dependencies": ["error", { "allow": ["vscode"] }]
+  }
+}
+```
 
 ## Plugins
 

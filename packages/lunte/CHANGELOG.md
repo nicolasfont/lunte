@@ -3,10 +3,10 @@
 ## Unreleased
 
 ### Breaking
-- `import/no-undeclared-dependencies` reports errors by default, so `lunte` can fail on projects that import packages they only get transitively. Declare them in `package.json`; for modules supplied by the host (such as `react-native-bare-kit` in a React Native app), declare an optional peer dependency or use an inline ignore. To opt out, set `"import/no-undeclared-dependencies": "off"` in `.lunterc`.
+- `import/no-undeclared-dependencies` reports errors by default, so `lunte` can fail on projects that import packages they only get transitively. Declare them in `package.json`; for modules supplied by the host (such as `react-native-bare-kit` in a React Native app), declare an optional peer dependency, list it in the rule's `allow` option, or use an inline ignore. To opt out, set `"import/no-undeclared-dependencies": "off"` in `.lunterc`.
 
 ### Added
-- Add `import/no-undeclared-dependencies` (on by default) to report imports and requires of packages not declared in the nearest `package.json` or any `package.json` above it, resolving specifiers through the nearest `package.json` `imports`.
+- Add `import/no-undeclared-dependencies` (on by default) to report imports and requires of packages not declared in the nearest `package.json` or any `package.json` above it, resolving specifiers through the nearest `package.json` `imports`. Packages supplied by the host can be listed in its `allow` option.
 - Expose the nearest `package.json` to rules as `context.getPackageManifest()`, linked to the ones above it through `parent`.
 
 ### Changed

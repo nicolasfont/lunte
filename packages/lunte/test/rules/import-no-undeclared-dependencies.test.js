@@ -158,6 +158,28 @@ export { nested, dep, fs, self, internal }
   )
 })
 
+test('allows packages listed in the allow option', async (t) => {
+  const ruleOverrides = BASE_OVERRIDES.map((override) =>
+    override.name === RULE_ID
+      ? { name: RULE_ID, severity: ['error', { allow: ['vscode', 'bare-missing'] }] }
+      : override
+  )
+  const result = await analyzeSnippet(
+    `
+import vscode from 'vscode'
+import sub from 'vscode/sub'
+import mapped from '#missing-target'
+import missing from 'missing'
+export { vscode, sub, mapped, missing }
+`,
+    { ruleOverrides }
+  )
+  t.alike(
+    result.diagnostics.map((d) => [d.line, d.message]),
+    [[5, `'missing' is not declared in package.json dependencies.`]]
+  )
+})
+
 test('uses unsaved package.json contents', async (t) => {
   const result = await analyzeSnippet(`import missing from 'missing'\nexport { missing }\n`, {
     sourceOverrides: [[join(FIXTURE, 'package.json'), '{ "dependencies": { "missing": "1" } }']]

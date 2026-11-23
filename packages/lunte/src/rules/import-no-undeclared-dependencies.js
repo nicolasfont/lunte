@@ -59,7 +59,8 @@ export const importNoUndeclaredDependencies = {
     name: 'import/no-undeclared-dependencies',
     description: 'Disallow importing or requiring packages not declared in package.json.',
     recommended: true,
-    defaultSeverity: Severity.error
+    defaultSeverity: Severity.error,
+    defaultOptions: [{ allow: [] }]
   },
   create(context) {
     const manifest = context.getPackageManifest()
@@ -67,6 +68,8 @@ export const importNoUndeclaredDependencies = {
 
     const { data } = manifest
     const declared = collectDeclaredDependencies(manifest)
+    const { allow } = context.options[0] ?? {}
+    const allowed = new Set(Array.isArray(allow) ? allow : [])
     const imports = data.imports && typeof data.imports === 'object' ? data.imports : null
 
     function check(node) {
@@ -105,7 +108,9 @@ export const importNoUndeclaredDependencies = {
 
     function isDeclared(specifier) {
       const name = getPackageName(specifier)
-      return NODE_BUILTINS.has(name) || name === data.name || declared.has(name)
+      return (
+        NODE_BUILTINS.has(name) || name === data.name || declared.has(name) || allowed.has(name)
+      )
     }
 
     return {
