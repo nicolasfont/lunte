@@ -8,6 +8,7 @@ import { extractFileDirectives } from './file-directives.js'
 import { runRules } from './rule-runner.js'
 import { buildInlineIgnoreMatcher } from './inline-ignores.js'
 import { applyFixes } from './fixes.js'
+import { findPackageManifest } from './package-manifest.js'
 
 export const MAX_FIX_PASSES = 10
 
@@ -44,12 +45,16 @@ export async function analyze({
   let fixedDiagnostics = 0
   let fixedFiles = 0
   const fixedOutputs = new Map()
+  const manifestCache = new Map()
+  const normalizedSourceOverrides = normalizeSourceOverrides(sourceOverrides)
 
   if (source !== undefined) {
     const result = await analyzeSource(String(source), {
       filePath: sourceFile,
       ruleConfig,
       baseGlobals,
+      sourceOverrides: normalizedSourceOverrides,
+      manifestCache,
       fix,
       write: false
     })
@@ -62,13 +67,12 @@ export async function analyze({
       fixedOutputs.set(sourceFile ?? 'input', result.fixes.output)
     }
   } else {
-    const normalizedSourceOverrides = normalizeSourceOverrides(sourceOverrides)
-
     for (const file of files) {
       const result = await analyzeFile(file, {
         ruleConfig,
         baseGlobals,
         sourceOverrides: normalizedSourceOverrides,
+        manifestCache,
         fix,
         write
       })
@@ -93,7 +97,10 @@ export async function analyze({
   return { diagnostics, fixedEdits, fixedDiagnostics, fixedFiles, fixedOutputs }
 }
 
-async function analyzeFile(filePath, { ruleConfig, baseGlobals, sourceOverrides, fix, write }) {
+async function analyzeFile(
+  filePath,
+  { ruleConfig, baseGlobals, sourceOverrides, manifestCache, fix, write }
+) {
   const diagnostics = []
   let source
   if (sourceOverrides?.has(filePath)) {
@@ -111,15 +118,26 @@ async function analyzeFile(filePath, { ruleConfig, baseGlobals, sourceOverrides,
     }
   }
 
-  return analyzeSource(source, { filePath, ruleConfig, baseGlobals, fix, write })
+  return analyzeSource(source, {
+    filePath,
+    ruleConfig,
+    baseGlobals,
+    sourceOverrides,
+    manifestCache,
+    fix,
+    write
+  })
 }
 
 async function analyzeSource(
   source,
-  { filePath, ruleConfig, baseGlobals, fix = false, write = true }
+  { filePath, ruleConfig, baseGlobals, sourceOverrides, manifestCache, fix = false, write = true }
 ) {
   const diagnostics = []
-  const run = createSourceRunner({ filePath, ruleConfig, baseGlobals })
+  const packageManifest = filePath
+    ? await findPackageManifest(filePath, { cache: manifestCache, sourceOverrides })
+    : null
+  const run = createSourceRunner({ filePath, ruleConfig, baseGlobals, packageManifest })
 
   try {
     const initialDiagnostics = run(source)
@@ -190,16 +208,14 @@ function applyFixPasses(source, diagnostics, run) {
   return { output, diagnostics, appliedEdits, appliedDiagnostics, error }
 }
 
-function createSourceRunner({ filePath, ruleConfig, baseGlobals }) {
+function createSourceRunner({ filePath, ruleConfig, baseGlobals, packageManifest }) {
+  const options = { filePath, ruleConfig, baseGlobals, packageManifest }
+
   if (isJsonFile(filePath)) {
-    return (currentSource) => runJsonRules(currentSource, { filePath, ruleConfig, baseGlobals })
+    return (currentSource) => runJsonRules(currentSource, options)
   }
 
-  return (currentSource) => runJavaScriptRules(currentSource, {
-    filePath,
-    ruleConfig,
-    baseGlobals
-  })
+  return (currentSource) => runJavaScriptRules(currentSource, options)
 }
 
 function parseStep(fn) {
@@ -211,7 +227,7 @@ function parseStep(fn) {
   }
 }
 
-function runJavaScriptRules(currentSource, { filePath, ruleConfig, baseGlobals }) {
+function runJavaScriptRules(currentSource, { filePath, ruleConfig, baseGlobals, packageManifest }) {
   const directives = extractFileDirectives(currentSource)
   const globals = mergeGlobals(baseGlobals, directives)
   const comments = []
@@ -229,11 +245,12 @@ function runJavaScriptRules(currentSource, { filePath, ruleConfig, baseGlobals }
     source: currentSource,
     ruleConfig,
     globals,
-    inlineIgnores
+    inlineIgnores,
+    packageManifest
   })
 }
 
-function runJsonRules(currentSource, { filePath, ruleConfig, baseGlobals }) {
+function runJsonRules(currentSource, { filePath, ruleConfig, baseGlobals, packageManifest }) {
   const ast = parseStep(() => {
     JSON.parse(currentSource)
     return parseJsonAst(currentSource, { filePath })
@@ -244,7 +261,8 @@ function runJsonRules(currentSource, { filePath, ruleConfig, baseGlobals }) {
     source: currentSource,
     ruleConfig,
     globals: baseGlobals,
-    inlineIgnores: NO_INLINE_IGNORES
+    inlineIgnores: NO_INLINE_IGNORES,
+    packageManifest
   })
 }
 

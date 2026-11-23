@@ -10,7 +10,8 @@ export class RuleContext {
     ruleSeverity = Severity.error,
     ruleOptions = [],
     globals,
-    ignoreMatcher
+    ignoreMatcher,
+    packageManifest = null
   }) {
     this.filePath = filePath
     this.source = source
@@ -23,6 +24,7 @@ export class RuleContext {
     this.options = ruleOptions
     this.globals = globals
     this.ignoreMatcher = ignoreMatcher
+    this.packageManifest = packageManifest
   }
 
   setTraversalState({ node, ancestors }) {
@@ -93,6 +95,10 @@ export class RuleContext {
 
   getGlobals() {
     return this.globals
+  }
+
+  getPackageManifest() {
+    return this.packageManifest
   }
 
   getSource(node = this._currentNode) {

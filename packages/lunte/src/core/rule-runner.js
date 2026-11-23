@@ -11,7 +11,15 @@ const DEFAULT_IGNORE_MATCHER = {
   }
 }
 
-export function runRules({ ast, filePath, source, ruleConfig, globals, inlineIgnores }) {
+export function runRules({
+  ast,
+  filePath,
+  source,
+  ruleConfig,
+  globals,
+  inlineIgnores,
+  packageManifest = null
+}) {
   const effectiveConfig = ruleConfig ?? getDefaultRuleConfig()
   const activeRules = []
 
@@ -40,7 +48,8 @@ export function runRules({ ast, filePath, source, ruleConfig, globals, inlineIgn
       ruleSeverity: config.severity,
       ruleOptions: mergeRuleOptions(rule.meta?.defaultOptions, config.options),
       globals,
-      ignoreMatcher
+      ignoreMatcher,
+      packageManifest
     })
     const listeners = normalizeListeners(rule.create(context))
     return { context, listeners }
