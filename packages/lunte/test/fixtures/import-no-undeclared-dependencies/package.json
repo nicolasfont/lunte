@@ -1,0 +1,32 @@
+{
+  "name": "@fixture/self",
+  "imports": {
+    "#internal": "./lib/internal.js",
+    "#lib/*": "./lib/*.js",
+    "#pkg/*": "pkg-pattern/*",
+    "#tie/*": "./tie/*",
+    "#tie/*.js": "tie-missing/*.js",
+    "#missing-target": {
+      "bare": "bare-missing",
+      "default": "./fallback.js"
+    },
+    "fs": {
+      "bare": "bare-fs",
+      "default": "fs"
+    }
+  },
+  "dependencies": {
+    "dep": "^1.0.0",
+    "@scope/dep": "^1.0.0",
+    "pkg-pattern": "^1.0.0"
+  },
+  "devDependencies": {
+    "dev-dep": "^1.0.0"
+  },
+  "optionalDependencies": {
+    "bare-fs": "^4.0.0"
+  },
+  "peerDependencies": {
+    "peer-dep": "^1.0.0"
+  }
+}

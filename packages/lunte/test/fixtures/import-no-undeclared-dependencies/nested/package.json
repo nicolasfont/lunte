@@ -1,0 +1,12 @@
+{
+  "name": "@fixture/nested",
+  "imports": {
+    "fs": {
+      "bare": "bare-fs",
+      "default": "fs"
+    }
+  },
+  "dependencies": {
+    "nested-dep": "^1.0.0"
+  }
+}

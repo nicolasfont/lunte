@@ -20,6 +20,7 @@ import { preferConst } from './prefer-const.js'
 import { curly } from './curly.js'
 import { constructorSuper } from './constructor-super.js'
 import { importNoDuplicates } from './import-no-duplicates.js'
+import { importNoUndeclaredDependencies } from './import-no-undeclared-dependencies.js'
 import { noRedeclare } from './no-redeclare.js'
 import { defaultCaseLast } from './default-case-last.js'
 import { packageJsonExportsOrder } from './package-json-exports-order.js'
@@ -49,6 +50,7 @@ registerRule(preferConst)
 registerRule(curly)
 registerRule(constructorSuper)
 registerRule(importNoDuplicates)
+registerRule(importNoUndeclaredDependencies)
 registerRule(noRedeclare)
 registerRule(defaultCaseLast)
 registerRule(packageJsonExportsOrder)

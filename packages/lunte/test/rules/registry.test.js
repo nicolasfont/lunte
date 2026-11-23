@@ -26,6 +26,7 @@ test('builtInRules exposes expected rule names', (t) => {
     'curly',
     'constructor-super',
     'import/no-duplicates',
+    'import/no-undeclared-dependencies',
     'no-redeclare',
     'default-case-last',
     'package-json/exports-order',
