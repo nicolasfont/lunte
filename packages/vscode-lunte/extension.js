@@ -1,4 +1,4 @@
-const vscode = require('vscode')
+const vscode = require('vscode') // lunte-disable-line import/no-undeclared-dependencies -- provided by the VS Code host
 const { LanguageClient } = require('vscode-languageclient/node')
 
 /** @type {LanguageClient | null} */
